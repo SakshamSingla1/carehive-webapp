@@ -1,0 +1,112 @@
+import { request } from "."
+import { API_METHOD } from "../utils/constant";
+import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
+
+export const AUTH_URLS = {
+    REGISTER: "auth/register",
+    LOGIN : "auth/login",
+    VERIFY_OTP : "auth/verify-otp",
+    SEND_OTP : "auth/send-otp",
+    RESEND_OTP : "auth/resend-otp",
+    FORGOT_PASSWORD : "auth/forgot-password",
+    VALIDATE_RESET_TOKEN : "auth/validate-reset-token",
+    RESET_PASSWORD : "auth/reset-password",
+    CHANGE_PASSWORD : "auth/change-password",
+}
+
+export interface AuthRegisterDTO {
+    fullName: string;
+    username: string;
+    email: string;
+    phone: string;
+    role: string;
+    password: string;
+}
+
+export interface AuthLoginDTO {
+    username?: string;
+    email?: string;
+    phone?: string;
+    otp?: string;
+    password?: string;
+}
+
+export interface AuthVerifyOtpDTO {
+    phone?: string;
+    email?: string;
+    otp: string;
+}
+
+export interface PasswordResetConfirmDTO {
+    token: string;
+    newPassword: string;
+    confirmPassword?: string;
+}
+
+export interface ChangePasswordDTO {
+    oldPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+}
+
+export interface UpdateUserProfileDTO {
+    fullName: string;
+    username: string;
+    email: string;
+    phone: string;
+    role: string;
+}
+
+export const useAuthService = () => {
+    const { user } = useAuthenticatedUser();
+
+    const login = (data: AuthLoginDTO) => {
+        localStorage.setItem("reLoginTimestamp", new Date().toISOString());
+        sessionStorage.removeItem("sessionHandled");
+        return request(API_METHOD.POST, AUTH_URLS.LOGIN, null, data);
+    }
+
+    const register = async (user: AuthRegisterDTO) => {
+        return request(API_METHOD.POST, AUTH_URLS.REGISTER, null, user);
+    }
+
+    const verifyOtp = async (data: AuthVerifyOtpDTO) => {
+        return request(API_METHOD.POST, AUTH_URLS.VERIFY_OTP, null, data);
+    }
+
+    const resendOtp = async (data: {email?: string}) => {
+        return request(API_METHOD.POST, AUTH_URLS.RESEND_OTP, null, data);
+    }
+
+    const sendOtp = async (data: {phone?: string}) => {
+        return request(API_METHOD.POST, AUTH_URLS.SEND_OTP, null, data);
+    }
+
+    const forgotPassword = async (data: {email?: string}) => {
+        return request(API_METHOD.POST, AUTH_URLS.FORGOT_PASSWORD, null, data);
+    }
+
+    const validateResetToken = async (data: {token: string}) => {
+        return request(API_METHOD.POST, AUTH_URLS.VALIDATE_RESET_TOKEN, null, data);
+    }
+
+    const resetPassword = async (data: PasswordResetConfirmDTO) => {
+        return request(API_METHOD.POST, AUTH_URLS.RESET_PASSWORD, null, data);
+    }
+
+    const changePassword = async (data: ChangePasswordDTO) => {
+        return request(API_METHOD.PUT, AUTH_URLS.CHANGE_PASSWORD, user, data);
+    }
+
+    return {
+        login,
+        register,
+        verifyOtp,
+        sendOtp,
+        resendOtp,
+        forgotPassword,
+        validateResetToken,
+        resetPassword,
+        changePassword
+    }
+}
